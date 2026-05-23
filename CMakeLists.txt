@@ -16,3 +16,10 @@ add_executable(FortniteDumper
 
 target_include_directories(FortniteDumper PRIVATE include)
 target_link_libraries(FortniteDumper PRIVATE psapi)
+
+# Embed manifest for auto admin elevation (UAC prompt)
+if(MSVC)
+    set_target_properties(FortniteDumper PROPERTIES
+        LINK_FLAGS "/MANIFEST:EMBED /MANIFESTINPUT:${CMAKE_SOURCE_DIR}/FortniteDumper.manifest"
+    )
+endif()

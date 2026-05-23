@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <chrono>
+#include <filesystem>
 
 #include "memory.h"
 #include "names.h"
@@ -36,10 +37,18 @@ void PrintUsage() {
 int main(int argc, char* argv[]) {
     PrintBanner();
 
+    // Get the directory where the exe is located
+    std::filesystem::path exePath = std::filesystem::path(argv[0]).parent_path();
+    if (exePath.empty()) exePath = std::filesystem::current_path();
+
+    // Create "offsets" folder beside the exe
+    std::filesystem::path offsetsDir = exePath / "offsets";
+    std::filesystem::create_directories(offsetsDir);
+
     // Parse arguments
     bool offsetsOnly = false;
     bool sdkOnly = false;
-    std::string outputDir = "SDK_Dump";
+    std::string outputDir = offsetsDir.string();
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
