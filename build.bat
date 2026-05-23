@@ -48,7 +48,6 @@ if errorlevel 1 (
     echo [!] CMake not found in PATH.
     echo     Checking VS installation for CMake...
     
-    :: Try VS bundled CMake
     set "CMAKE_PATH=%VS_PATH%\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin"
     if exist "%CMAKE_PATH%\cmake.exe" (
         set "PATH=%CMAKE_PATH%;%PATH%"
@@ -63,7 +62,66 @@ if errorlevel 1 (
 echo [+] CMake found
 echo.
 
-:: Create build directory
+:: ============================================================
+:: Download ImGui if not present
+:: ============================================================
+if not exist "libs\imgui\imgui.cpp" (
+    echo [*] Downloading ImGui...
+    
+    if not exist "libs" mkdir libs
+    
+    :: Use PowerShell to download ImGui zip
+    powershell -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://github.com/ocornut/imgui/archive/refs/tags/v1.91.8.zip' -OutFile 'libs\imgui.zip' }" 2>nul
+    
+    if not exist "libs\imgui.zip" (
+        echo [!] Failed to download ImGui. Trying alternative...
+        powershell -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('https://github.com/ocornut/imgui/archive/refs/tags/v1.91.8.zip', 'libs\imgui.zip') }" 2>nul
+    )
+    
+    if not exist "libs\imgui.zip" (
+        echo [!] Failed to download ImGui.
+        echo     Please download manually from: https://github.com/ocornut/imgui/releases/tag/v1.91.8
+        echo     Extract to: libs\imgui\
+        pause
+        exit /b 1
+    )
+    
+    :: Extract zip
+    echo [*] Extracting ImGui...
+    powershell -Command "& { Expand-Archive -Path 'libs\imgui.zip' -DestinationPath 'libs\' -Force }"
+    
+    :: Rename extracted folder
+    if exist "libs\imgui-1.91.8" (
+        if exist "libs\imgui" rmdir /s /q "libs\imgui"
+        rename "libs\imgui-1.91.8" "imgui"
+    )
+    
+    :: Cleanup zip
+    del /q "libs\imgui.zip" 2>nul
+    
+    if exist "libs\imgui\imgui.cpp" (
+        echo [+] ImGui downloaded and extracted successfully!
+    ) else (
+        echo [!] ImGui extraction failed.
+        pause
+        exit /b 1
+    )
+    echo.
+)
+
+:: ============================================================
+:: Build
+:: ============================================================
+
+:: Clean old build if cmake config changed
+if exist "build\CMakeCache.txt" (
+    findstr /c:"FetchContent" "build\CMakeCache.txt" >nul 2>&1
+    if not errorlevel 1 (
+        echo [*] Cleaning old build directory...
+        rmdir /s /q build
+    )
+)
+
 if not exist "build" mkdir build
 cd build
 
@@ -75,16 +133,9 @@ cmake .. -G "Visual Studio 17 2022" -A x64
 if errorlevel 1 (
     echo.
     echo [!] CMake configuration failed.
-    echo     Trying with Ninja generator instead...
-    cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release
-    
-    if errorlevel 1 (
-        echo.
-        echo [!] Build configuration failed. Make sure you have VS 2022 with C++ tools.
-        cd ..
-        pause
-        exit /b 1
-    )
+    cd ..
+    pause
+    exit /b 1
 )
 
 :: Build

@@ -4,17 +4,8 @@ project(FortniteDumper LANGUAGES CXX RC)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Fetch ImGui from GitHub
-include(FetchContent)
-FetchContent_Declare(
-    imgui
-    GIT_REPOSITORY https://github.com/ocornut/imgui.git
-    GIT_TAG v1.91.8
-)
-FetchContent_MakeAvailable(imgui)
-
-# ImGui source files
-set(IMGUI_DIR ${imgui_SOURCE_DIR})
+# ImGui sources (bundled in libs/imgui/)
+set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/libs/imgui)
 set(IMGUI_SOURCES
     ${IMGUI_DIR}/imgui.cpp
     ${IMGUI_DIR}/imgui_demo.cpp
@@ -51,7 +42,9 @@ target_link_libraries(FortniteDumper PRIVATE
     d3dcompiler
 )
 
-# Disable CMake's auto-manifest generation to avoid duplicate with resource.rc
-set_target_properties(FortniteDumper PROPERTIES
-    LINK_FLAGS "/MANIFEST:NO"
-)
+# Disable CMake's auto-manifest to avoid duplicate with resource.rc
+if(MSVC)
+    set_target_properties(FortniteDumper PROPERTIES
+        LINK_FLAGS "/MANIFEST:NO"
+    )
+endif()
