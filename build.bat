@@ -71,16 +71,16 @@ if not exist "libs\imgui\imgui.cpp" (
     if not exist "libs" mkdir libs
     
     :: Use PowerShell to download ImGui zip
-    powershell -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://github.com/ocornut/imgui/archive/refs/tags/v1.91.8.zip' -OutFile 'libs\imgui.zip' }" 2>nul
+    powershell -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://github.com/ocornut/imgui/archive/refs/tags/v1.90.4.zip' -OutFile 'libs\imgui.zip' }" 2>nul
     
     if not exist "libs\imgui.zip" (
         echo [!] Failed to download ImGui. Trying alternative...
-        powershell -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('https://github.com/ocornut/imgui/archive/refs/tags/v1.91.8.zip', 'libs\imgui.zip') }" 2>nul
+        powershell -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('https://github.com/ocornut/imgui/archive/refs/tags/v1.90.4.zip', 'libs\imgui.zip') }" 2>nul
     )
     
     if not exist "libs\imgui.zip" (
         echo [!] Failed to download ImGui.
-        echo     Please download manually from: https://github.com/ocornut/imgui/releases/tag/v1.91.8
+        echo     Please download manually from: https://github.com/ocornut/imgui/releases/tag/v1.90.4
         echo     Extract to: libs\imgui\
         pause
         exit /b 1
@@ -91,9 +91,9 @@ if not exist "libs\imgui\imgui.cpp" (
     powershell -Command "& { Expand-Archive -Path 'libs\imgui.zip' -DestinationPath 'libs\' -Force }"
     
     :: Rename extracted folder
-    if exist "libs\imgui-1.91.8" (
+    if exist "libs\imgui-1.90.4" (
         if exist "libs\imgui" rmdir /s /q "libs\imgui"
-        rename "libs\imgui-1.91.8" "imgui"
+        rename "libs\imgui-1.90.4" "imgui"
     )
     
     :: Cleanup zip
