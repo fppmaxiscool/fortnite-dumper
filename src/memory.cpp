@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "memory.h"
 #include <iostream>
 #include <algorithm>

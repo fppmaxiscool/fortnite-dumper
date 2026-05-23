@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "objects.h"
 #include "memory.h"
 #include "engine.h"

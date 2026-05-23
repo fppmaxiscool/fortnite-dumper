@@ -96,7 +96,10 @@ namespace Names {
         } else {
             // Wide string - convert to narrow
             std::wstring wname = Memory::ReadWString(entryAddr + 2, nameLen);
-            name.assign(wname.begin(), wname.end());
+            name.resize(wname.size());
+            for (size_t i = 0; i < wname.size(); i++) {
+                name[i] = static_cast<char>(wname[i]);
+            }
         }
 
         // Cache the result
