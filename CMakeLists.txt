@@ -4,7 +4,28 @@ project(FortniteDumper LANGUAGES CXX RC)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(FortniteDumper
+# Fetch ImGui from GitHub
+include(FetchContent)
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.91.8
+)
+FetchContent_MakeAvailable(imgui)
+
+# ImGui source files
+set(IMGUI_DIR ${imgui_SOURCE_DIR})
+set(IMGUI_SOURCES
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_demo.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_win32.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_dx11.cpp
+)
+
+add_executable(FortniteDumper WIN32
     src/main.cpp
     src/memory.cpp
     src/engine.cpp
@@ -12,8 +33,25 @@ add_executable(FortniteDumper
     src/objects.cpp
     src/generator.cpp
     src/offsets.cpp
+    src/gui.cpp
+    ${IMGUI_SOURCES}
     resource.rc
 )
 
-target_include_directories(FortniteDumper PRIVATE include)
-target_link_libraries(FortniteDumper PRIVATE psapi)
+target_include_directories(FortniteDumper PRIVATE
+    include
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
+)
+
+target_link_libraries(FortniteDumper PRIVATE
+    psapi
+    d3d11
+    dxgi
+    d3dcompiler
+)
+
+# Disable CMake's auto-manifest generation to avoid duplicate with resource.rc
+set_target_properties(FortniteDumper PROPERTIES
+    LINK_FLAGS "/MANIFEST:NO"
+)
